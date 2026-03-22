@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>物语系列检定 - MONOGATARI QUIZ Mobile</title>
+    <title>物语系列检定 - MONOGATARI QUIZ 3.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,12 +11,13 @@
             --text: #ffffff;
             --accent: #d20000;
             --sub: #444;
+            --correct: #00ff88;
         }
 
         * { 
             cursor: crosshair; 
             box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body, html {
@@ -24,183 +25,131 @@
             background: var(--bg);
             color: var(--text);
             font-family: 'Noto Serif SC', serif;
-            overflow: hidden;
-            height: 100%;
-            width: 100%;
+            height: 100%; width: 100%;
+            overflow: hidden; /* 防止整体滚动，内部滚动由容器控制 */
         }
 
-        /* 背景网格 */
         .background {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-image: linear-gradient(var(--sub) 1px, transparent 1px),
                               linear-gradient(90deg, var(--sub) 1px, transparent 1px);
             background-size: 30px 30px;
-            opacity: 0.1;
-            z-index: -2;
+            opacity: 0.1; z-index: -2;
         }
 
-        /* 竖排标题 - 移动端优化 */
-        .vertical-title {
-            position: fixed; right: 15px; top: 20px;
-            writing-mode: vertical-rl;
-            font-size: 1rem;
-            letter-spacing: 0.3rem;
-            color: var(--accent);
-            opacity: 0.6;
-            border-left: 1px solid var(--accent);
-            padding-left: 5px;
-            z-index: 10;
-        }
-
-        /* 遮罩转场 */
         #shutter {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 2000; display: none;
             justify-content: center; align-items: center;
-            font-size: 15vw; /* 随屏幕宽度缩放 */
-            font-weight: 900;
+            font-size: 15vw; font-weight: 900;
         }
 
         .container {
             display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; width: 100%; padding: 15px;
+            height: 100vh; width: 100%; padding: 15px;
         }
 
-        /* 主卡片容器 */
         .main-card {
             border: 1px solid var(--text);
-            padding: 40px 25px;
+            padding: 30px 20px;
             width: 100%;
             max-width: 900px;
+            max-height: 90vh; /* 限制高度 */
             background: rgba(0,0,0,0.9);
             position: relative;
             box-shadow: 10px 10px 0px var(--accent);
-            margin: auto;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .main-card::before {
-            content: "MONOGATARI SERIES";
-            position: absolute; top: -10px; left: 15px;
-            background: var(--bg); padding: 0 8px;
-            font-size: 0.7rem; color: var(--accent);
-            letter-spacing: 2px;
+        /* 内部滚动区域 */
+        .scroll-area {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 10px;
         }
 
-        /* 题目头部 */
-        .q-header {
-            display: flex; flex-direction: column; margin-bottom: 25px;
-        }
+        /* 滚动条美化 */
+        .scroll-area::-webkit-scrollbar { width: 5px; }
+        .scroll-area::-webkit-scrollbar-thumb { background: var(--accent); }
 
-        .q-num {
-            font-size: 3.5rem; font-weight: 900; line-height: 1;
-            color: var(--accent); margin-bottom: 10px;
-        }
+        .q-header { display: flex; flex-direction: column; margin-bottom: 25px; }
+        .q-num { font-size: 3rem; font-weight: 900; color: var(--accent); line-height: 1; }
+        .q-text { font-size: 1.4rem; font-weight: 700; border-bottom: 2px solid var(--text); padding-bottom: 10px; }
 
-        .q-text {
-            font-size: 1.4rem; font-weight: 700;
-            line-height: 1.5; border-bottom: 2px solid var(--text);
-            padding-bottom: 15px; width: 100%;
-            word-break: break-all;
-        }
-
-        /* 选项按钮网格 - 关键适配点 */
-        .options-grid {
-            display: grid; 
-            grid-template-columns: 1fr 1fr; /* 电脑端双列 */
-            gap: 15px;
-        }
-
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .opt-btn {
             background: transparent; border: 1px solid var(--text);
-            color: var(--text); padding: 15px;
-            font-size: 1rem; font-family: inherit;
+            color: var(--text); padding: 15px; font-size: 1rem; font-family: inherit;
             text-align: left; transition: all 0.2s;
-            position: relative; overflow: hidden;
-            width: 100%;
-            display: block;
         }
+        .opt-btn:hover { background: var(--accent); }
 
-        .opt-btn:active {
-            background: var(--accent);
-            transform: scale(0.98);
+        /* 复盘样式 */
+        .review-item {
+            border: 1px solid var(--sub);
+            margin-bottom: 20px;
+            padding: 15px;
+            text-align: left;
         }
+        .review-q { font-weight: 900; margin-bottom: 10px; border-left: 4px solid var(--accent); padding-left: 10px; }
+        .review-res { font-size: 0.9rem; margin-top: 10px; }
+        .status-tag { display: inline-block; padding: 2px 8px; margin-right: 10px; font-weight: 900; }
+        .status-correct { background: var(--correct); color: #000; }
+        .status-wrong { background: var(--accent); color: #fff; }
 
-        /* 开始/结束 屏幕 */
         .screen { display: none; text-align: center; }
         .active { display: block; }
 
-        .btn-start {
-            font-size: 1.8rem; padding: 15px 40px;
-            background: transparent; color: var(--text);
-            border: 3px solid var(--text); font-family: inherit;
-            margin-top: 25px; width: 100%; max-width: 300px;
-        }
+        .btn-start { font-size: 2rem; padding: 15px 40px; background: transparent; color: var(--text); border: 3px solid var(--text); margin-top: 25px; width: 100%; }
+        .rank-name { font-size: 3rem; font-weight: 900; color: var(--accent); margin-bottom: 20px; }
 
-        .rank-name { 
-            font-size: 2.5rem; font-weight: 900; 
-            margin: 15px 0; color: var(--accent); 
-            line-height: 1.2;
-        }
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: var(--accent); transition: width 0.3s; }
 
-        .progress-bar {
-            position: absolute; bottom: 0; left: 0;
-            height: 4px; background: var(--accent);
-            transition: width 0.3s;
-        }
-
-        /* --- 手机端适配媒体查询 --- */
         @media (max-width: 768px) {
-            .options-grid {
-                grid-template-columns: 1fr; /* 手机端单列 */
-            }
-            .main-card {
-                padding: 30px 20px;
-                box-shadow: 6px 6px 0px var(--accent);
-            }
-            .q-num { font-size: 2.8rem; }
-            .q-text { font-size: 1.2rem; }
-            .vertical-title { display: none; } /* 窄屏隐藏侧边文字 */
+            .options-grid { grid-template-columns: 1fr; }
             #shutter { font-size: 20vw; }
-        }
-
-        @media (max-height: 600px) {
-            .main-card { padding: 15px; }
-            .q-header { margin-bottom: 10px; }
-            .q-num { font-size: 2rem; }
         }
     </style>
 </head>
 <body>
 
     <div class="background"></div>
-    <div class="vertical-title">物语系列・全知识检定・移动端兼容版</div>
-
     <div id="shutter"></div>
 
     <div class="container">
         <div class="main-card">
             <div id="progress" class="progress-bar" style="width: 0%"></div>
 
+            <!-- 开始界面 -->
             <div id="start-screen" class="screen active">
-                <div style="font-size: 1rem; margin-bottom: 10px; opacity:0.6;">「俺は、何でもは知らない」</div>
-                <h1 style="font-size: 2.2rem; margin: 0; line-height: 1.2;">知っていることだけ。</h1>
-                <p style="font-size: 0.9rem; margin-top: 15px;">全系列核心知识 30 问</p>
+                <div style="font-size: 1rem; opacity:0.6;">「俺は、何でもは知らない」</div>
+                <h1 style="font-size: 2.5rem; margin: 10px 0;">知っていることだけ。</h1>
+                <p>怪异调查记录・全 30 问</p>
                 <button class="btn-start" onclick="startQuiz()">测 试 开 始</button>
             </div>
 
+            <!-- 答题界面 -->
             <div id="quiz-screen" class="screen">
                 <div class="q-header">
                     <span class="q-num" id="q-num">01</span>
-                    <div class="q-text" id="q-text">Loading...</div>
+                    <div class="q-text" id="q-text">加载中...</div>
                 </div>
                 <div class="options-grid" id="q-opts"></div>
             </div>
 
-            <div id="result-screen" class="screen">
-                <div id="score-detail" style="font-size: 1.2rem; color: var(--accent);"></div>
-                <div class="rank-name" id="rank-name">称号</div>
-                <p id="rank-desc" style="font-size: 1rem; line-height: 1.6; margin-bottom: 25px; text-align: left;"></p>
-                <button class="opt-btn" onclick="location.reload()" style="text-align: center;">再次尝试</button>
+            <!-- 结果复盘界面 -->
+            <div id="result-screen" class="screen" style="height: 100%; display: none;">
+                <div class="scroll-area">
+                    <div id="score-detail" style="font-size: 1.2rem; color: var(--accent);"></div>
+                    <div class="rank-name" id="rank-name">称号</div>
+                    
+                    <h3 style="border-top: 1px solid var(--sub); padding-top: 20px;">怪异调查记录详情</h3>
+                    <div id="review-list"></div>
+                    
+                    <button class="opt-btn" onclick="location.reload()" style="text-align: center; margin: 30px auto; width: 200px;">重新开始</button>
+                </div>
             </div>
         </div>
     </div>
@@ -241,7 +190,7 @@
 
     let current = 0;
     let score = 0;
-    let isTransitioning = false; // 防止快速连点题目
+    let userAnswers = []; // 存储用户的回答
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -255,8 +204,7 @@
             gain.connect(audioCtx.destination);
             gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-            osc.start();
-            osc.stop(audioCtx.currentTime + dur);
+            osc.start(); osc.stop(audioCtx.currentTime + dur);
         } catch(e) {}
     }
 
@@ -264,14 +212,10 @@
         const s = document.getElementById('shutter');
         s.style.display = 'flex';
         s.style.background = color;
-        s.style.color = color === '#d20000' ? '#000' : '#fff';
+        s.style.color = (color === '#d20000') ? '#000' : '#fff';
         s.innerText = text;
-        playTone(color === '#d20000' ? 150 : 100, 0.2);
-        
-        setTimeout(() => {
-            s.style.display = 'none';
-            if(callback) callback();
-        }, 1200); 
+        playTone((color === '#d20000') ? 150 : 100, 0.2);
+        setTimeout(() => { s.style.display = 'none'; if(callback) callback(); }, 1200);
     }
 
     function startQuiz() {
@@ -284,7 +228,6 @@
     }
 
     function updateQuestion() {
-        isTransitioning = false;
         const q = questions[current];
         document.getElementById('q-num').innerText = (current + 1).toString().padStart(2, '0');
         document.getElementById('q-text').innerText = q.q;
@@ -302,16 +245,13 @@
     }
 
     function handleAnswer(i) {
-        if (isTransitioning) return;
-        isTransitioning = true;
-
+        userAnswers.push(i);
         if(i === questions[current].c) score++;
         current++;
         
         if(current < questions.length) {
-            const tag = Math.random() > 0.5 ? '赤齣' : '黑齣';
-            const color = tag === '赤齣' ? '#d20000' : '#000';
-            showShutter(tag, color, updateQuestion);
+            const tag = (Math.random() > 0.5) ? '赤齣' : '黑齣';
+            showShutter(tag, (tag === '赤齣' ? '#d20000' : '#000'), updateQuestion);
         } else {
             showShutter('完', '#d20000', showResult);
         }
@@ -319,32 +259,38 @@
 
     function showResult() {
         document.getElementById('quiz-screen').classList.remove('active');
-        document.getElementById('result-screen').classList.add('active');
-        document.getElementById('progress').style.width = '100%';
+        const resScreen = document.getElementById('result-screen');
+        resScreen.style.display = 'block';
+        resScreen.classList.add('active');
+        
+        document.getElementById('score-detail').innerText = `RESULT: ${score} / ${questions.length}`;
         
         const rank = document.getElementById('rank-name');
         const desc = document.getElementById('rank-desc');
-        const detail = document.getElementById('score-detail');
-        
-        detail.innerText = `RESULT: ${score} / ${questions.length}`;
-        
         const ratio = score / questions.length;
-        if(ratio === 1) {
-            rank.innerText = "怪异之王";
-            desc.innerText = "你是真正的专家。忍野咩咩会把他的夏威夷衬衫传给你，你已经看穿了所有的虚假与真实。";
-        } else if(ratio >= 0.8) {
-            rank.innerText = "全知的班长";
-            desc.innerText = "「我不是无所不知，我只是恰好知道而已。」你的知识储备足以支撑起一整座图书馆。";
-        } else if(ratio >= 0.5) {
-            rank.innerText = "火炎姐妹";
-            desc.innerText = "充满了正义感但还有些不成熟。虽然了解怪异，但有时还是会被欺诈师蒙蔽双眼。";
-        } else if(ratio >= 0.2) {
-            rank.innerText = "迷途的幼女";
-            desc.innerText = "哎呀，咬到舌头了吗？你还在怪异的边缘徘徊，建议重新从《化物语》开始补番。";
-        } else {
-            rank.innerText = "贝木的饵食";
-            desc.innerText = "你完全被假货骗了！现在的你连自己的体重都守不住，快去寻找忍野先生的帮助吧。";
-        }
+
+        if(ratio === 1) { rank.innerText = "怪异之王"; desc.innerText = "你是真正的专家。忍野咩咩会把他的夏威夷衬衫传给你。"; }
+        else if(ratio >= 0.8) { rank.innerText = "全知的班长"; desc.innerText = "「我不是无所不知，我只是恰好知道而已。」"; }
+        else if(ratio >= 0.5) { rank.innerText = "火炎姐妹"; desc.innerText = "充满了正义感但还有些不成熟。"; }
+        else { rank.innerText = "贝木的饵食"; desc.innerText = "你完全被假货骗了！建议重新补番。"; }
+
+        // 生成复盘列表
+        const list = document.getElementById('review-list');
+        list.innerHTML = '';
+        questions.forEach((q, idx) => {
+            const isCorrect = userAnswers[idx] === q.c;
+            const item = document.createElement('div');
+            item.className = 'review-item';
+            item.innerHTML = `
+                <div class="review-q">${idx + 1}. ${q.q}</div>
+                <div class="review-res">
+                    <span class="status-tag ${isCorrect ? 'status-correct' : 'status-wrong'}">${isCorrect ? '正解' : '不正解'}</span>
+                    你的选择: <span style="color:${isCorrect ? 'var(--correct)' : 'var(--accent)'}">${q.a[userAnswers[idx]]}</span>
+                    ${!isCorrect ? `<br>正确答案: <span style="color:var(--correct)">${q.a[q.c]}</span>` : ''}
+                </div>
+            `;
+            list.appendChild(item);
+        });
     }
 </script>
 </body>
