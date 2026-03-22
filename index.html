@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>物语系列检定 - 終物語・完</title>
+    <title>物语系列检定 - MONOGATARI QUIZ 2.1 (Hardcore)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&display=swap');
-
         :root {
-            --bg: #000;
-            --text: #fff;
+            --bg: #050505;
+            --text: #ffffff;
             --accent: #d20000;
-            --gray: #1a1a1a;
+            --sub: #444;
         }
 
-        * { cursor: crosshair !important; }
+        * { cursor: crosshair; box-sizing: border-box; }
 
         body, html {
             margin: 0; padding: 0;
@@ -25,290 +24,295 @@
             height: 100vh;
         }
 
-        /* 动态背景文字 */
-        .bg-text {
-            position: absolute;
-            font-size: 8vw;
-            color: rgba(255,255,255,0.03);
-            white-space: nowrap;
-            z-index: -1;
-            animation: move 20s linear infinite;
+        .background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(var(--sub) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--sub) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.1;
+            z-index: -2;
         }
 
-        @keyframes move {
-            from { transform: translateX(100%); }
-            to { transform: translateX(-100%); }
+        .vertical-title {
+            position: fixed; right: 20px; top: 20px;
+            writing-mode: vertical-rl;
+            font-size: 1.5rem;
+            letter-spacing: 0.5rem;
+            color: var(--accent);
+            opacity: 0.8;
+            border-left: 1px solid var(--accent);
+            padding-left: 10px;
         }
 
-        /* 物语标志性闪烁卡片 */
-        #flash-card {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            font-size: 5rem;
-            letter-spacing: 20px;
+        #shutter {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1000; display: none;
+            justify-content: center; align-items: center;
+            font-size: 8rem; font-weight: 900;
+            transition: opacity 0.3s;
         }
 
         .container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            border: 15px solid var(--text);
-            transition: all 0.1s;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; padding: 40px;
         }
 
-        h1 {
-            font-size: 3.5rem;
-            border-bottom: 8px solid var(--accent);
-            padding-bottom: 10px;
-            margin-bottom: 50px;
-            text-shadow: 5px 5px 0px var(--accent);
+        .main-card {
+            border: 1px solid var(--text);
+            padding: 60px;
+            max-width: 1000px; width: 100%;
+            background: rgba(0,0,0,0.8);
+            position: relative;
+            box-shadow: 20px 20px 0px var(--accent);
         }
 
-        .quiz-box {
-            width: 100%;
-            max-width: 900px;
-            text-align: center;
+        .main-card::before {
+            content: "MONOGATARI SERIES";
+            position: absolute; top: -15px; left: 20px;
+            background: var(--bg); padding: 0 10px;
+            font-size: 0.8rem; color: var(--accent);
         }
 
-        .question-num {
-            color: var(--accent);
-            font-size: 1.2rem;
-            margin-bottom: 10px;
+        .q-header {
+            display: flex; align-items: flex-end; margin-bottom: 40px;
         }
 
-        .question-text {
-            font-size: 2rem;
-            margin-bottom: 40px;
-            line-height: 1.4;
-            min-height: 100px;
+        .q-num {
+            font-size: 5rem; font-weight: 900; line-height: 0.8;
+            color: var(--accent); margin-right: 20px;
+        }
+
+        .q-text {
+            font-size: 1.8rem; font-weight: 700;
+            line-height: 1.4; border-bottom: 2px solid var(--text);
+            padding-bottom: 10px; width: 100%;
         }
 
         .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
         }
 
         .opt-btn {
-            background: transparent;
-            border: 2px solid var(--text);
-            color: var(--text);
-            padding: 20px;
-            font-size: 1.2rem;
-            font-family: inherit;
-            transition: 0.2s;
-            position: relative;
-            overflow: hidden;
+            background: transparent; border: 1px solid var(--text);
+            color: var(--text); padding: 18px;
+            font-size: 1.1rem; font-family: inherit;
+            text-align: left; transition: all 0.2s;
+            position: relative; overflow: hidden;
         }
 
         .opt-btn:hover {
-            background: var(--text);
-            color: var(--bg);
-            transform: scale(1.02);
+            background: var(--accent); border-color: var(--accent);
+            padding-left: 35px;
         }
 
-        .start-screen, .result-screen {
-            text-align: center;
+        .opt-btn::after {
+            content: "▶"; position: absolute; left: -20px;
+            transition: 0.2s;
         }
 
-        .quote {
-            font-size: 1.2rem;
-            font-style: italic;
-            margin-bottom: 30px;
-            opacity: 0.7;
+        .opt-btn:hover::after { left: 15px; }
+
+        .screen { display: none; text-align: center; }
+        .active { display: block; }
+
+        .btn-start {
+            font-size: 2.5rem; padding: 20px 80px;
+            background: transparent; color: var(--text);
+            border: 5px solid var(--text); font-family: inherit;
+            transition: 0.3s; margin-top: 30px;
         }
 
-        .btn-large {
-            padding: 20px 60px;
-            font-size: 2rem;
-            background: var(--accent);
-            color: white;
-            border: none;
-            box-shadow: 10px 10px 0px white;
+        .btn-start:hover {
+            background: var(--text); color: var(--bg);
+            box-shadow: 0 0 30px rgba(255,255,255,0.5);
         }
 
-        .btn-large:hover {
-            transform: translate(-5px, -5px);
-            box-shadow: 15px 15px 0px white;
+        .rank-box { margin: 40px 0; }
+        .rank-name { font-size: 4rem; font-weight: 900; margin: 10px 0; color: var(--accent); }
+
+        .progress-bar {
+            position: absolute; bottom: 0; left: 0;
+            height: 5px; background: var(--accent);
+            transition: width 0.3s;
         }
 
-        /* 结果等级 */
-        .rank {
-            font-size: 4rem;
-            color: var(--accent);
-            margin: 20px 0;
-            text-decoration: underline;
-        }
-
-        #warning-bar {
-            position: fixed;
-            bottom: 0; width: 100%;
-            background: var(--accent);
-            color: #fff;
-            font-size: 0.8rem;
-            padding: 5px;
-            text-align: center;
-            letter-spacing: 10px;
+        @media (max-width: 768px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .q-text { font-size: 1.3rem; }
+            .main-card { padding: 20px; }
+            #shutter { font-size: 4rem; }
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-text" style="top:10%">MONOGATARI SERIES 物語系列 </div>
-    <div class="bg-text" style="top:50%; animation-delay: -10s;">鉄血にして熱血にして冷血の吸血鬼</div>
-    <div class="bg-text" style="top:80%; animation-delay: -5s;">阿良々木暦 戦場ヶ原ひたぎ</div>
+    <div class="background"></div>
+    <div class="vertical-title">物语系列・全知识检定・硬核三十问</div>
 
-    <div id="flash-card"></div>
+    <div id="shutter"></div>
 
     <div class="container">
-        <!-- 开始页面 -->
-        <div id="start-page" class="start-screen">
-            <div class="quote">“我不是无所不知，我只是恰好知道。”</div>
-            <h1>物语系列・全知识检定</h1>
-            <button class="btn-large" onclick="initQuiz()">测 试 开 始</button>
-        </div>
+        <div class="main-card">
+            <div id="progress" class="progress-bar" style="width: 0%"></div>
 
-        <!-- 答题页面 -->
-        <div id="quiz-page" class="quiz-box" style="display:none;">
-            <div class="question-num" id="q-idx">01</div>
-            <div class="question-text" id="q-text">Loading...</div>
-            <div class="options-grid" id="q-opts"></div>
-        </div>
+            <div id="start-screen" class="screen active">
+                <div style="font-size: 1.2rem; margin-bottom: 10px; opacity:0.6;">“我不是无所不知，我只是恰好知道。”</div>
+                <h1 style="font-size: 3rem; margin: 0;">物語シリーズ・全考察</h1>
+                <p>准备好面对三十个关于怪异的真相了吗？</p>
+                <button class="btn-start" onclick="startQuiz()">测 试 开 始</button>
+            </div>
 
-        <!-- 结果页面 -->
-        <div id="result-page" class="result-screen" style="display:none;">
-            <h2>检定结果报告</h2>
-            <div id="score-val" style="font-size: 2rem;">SCORE: 0</div>
-            <div class="rank" id="rank-name">路人级</div>
-            <p id="rank-desc">你只是个路过的观众...</p>
-            <button class="opt-btn" onclick="location.reload()">重新进入循环</button>
+            <div id="quiz-screen" class="screen">
+                <div class="q-header">
+                    <span class="q-num" id="q-num">01</span>
+                    <div class="q-text" id="q-text">Loading...</div>
+                </div>
+                <div class="options-grid" id="q-opts"></div>
+            </div>
+
+            <div id="result-screen" class="screen">
+                <div class="rank-box">
+                    <div id="score-detail" style="font-size: 1.5rem;"></div>
+                    <div class="rank-name" id="rank-name">称号</div>
+                </div>
+                <p id="rank-desc" style="font-size: 1.1rem; line-height: 1.6; max-width: 600px; margin: 0 auto 30px;"></p>
+                <button class="opt-btn" onclick="location.reload()" style="text-align: center; width: 220px; margin: 0 auto;">再次尝试</button>
+            </div>
         </div>
     </div>
 
-    <div id="warning-bar">警告：前方存在大量怪异 警告：前方存在大量怪异</div>
-
 <script>
-    // 强制音效合成器（物语转场音效）
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSound(type) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        if(type === 'click') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        } else if(type === 'flash') {
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(110, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-        }
-    }
-
     const questions = [
-        { q: "战场原黑仪在遇到历时，失去的是什么？", a: ["记忆", "重量", "声音", "痛觉"], c: 1 },
-        { q: "忍野忍曾经的名字是？", a: ["姬丝秀忒", "琪雅丝黛", "索菲亚", "露米娅"], c: 0 },
-        { q: "《伪物语》中，历与火怜进行的著名“活动”是？", a: ["打扑克", "刷牙", "赛跑", "捉迷藏"], c: 1 },
-        { q: "八九寺真宵背后的背包里，标志性的图案是？", a: ["猫", "蜗牛", "熊", "兔子"], c: 2 },
-        { q: "谁是所有怪异事件幕后的“非人类”策划者（影子）？", a: ["卧烟伊豆湖", "忍野扇", "贝木泥舟", "手折正弦"], c: 1 },
-        { q: "羽川翼在《猫物语（白）》中最终接受了自己的哪部分？", a: ["压力", "嫉妒（苛虎）", "色欲", "愤怒"], c: 1 },
-        { q: "千石抚子成为蛇神时，由于什么契机？", a: ["历的拒绝", "符咒", "喝了神酒", "吃了全知全能的药"], c: 1 },
-        { q: "《恋物语》中，欺诈师贝木泥舟欺骗的对象是谁？", a: ["阿良良木历", "战场原黑仪", "千石抚子", "羽川翼"], c: 2 },
-        { q: "《伤物语》中，历夺回姬丝秀忒四肢的顺序，最后一个人是？", a: ["德拉曼兹路基", "艾比索特", "奇洛金卡达", "忍野咩咩"], c: 2 },
-        { q: "“我不无所不知，我只知道我知道的。”这句话的日语原版第一人称是？", a: ["私 (Watashi)", "僕 (Boku)", "俺 (Ore)", "あたし (Atashi)"], c: 0 }
+        { q: "战场原黑仪在遇到历时，失去的是什么？", a: ["感情", "体重", "声音", "记忆"], c: 1 },
+        { q: "忍野忍曾经的名字，其全名开头是？", a: ["姬丝秀忒", "琪雅丝黛", "索菲亚", "露米娅"], c: 0 },
+        { q: "《伪物语》中，阿良良木历给火怜刷牙是为了交换什么情报？", a: ["贝木的下落", "月火的秘密", "没有交换，是惩罚", "神原的伤势"], c: 0 },
+        { q: "八九寺真宵背后的背包里，标志性的动物图案是？", a: ["蜗牛", "猫", "熊", "兔子"], c: 2 },
+        { q: "忍野扇自称是谁的枢轴？", a: ["阿良良木历", "卧烟伊豆湖", "忍野咩咩", "世界本身"], c: 0 },
+        { q: "羽川翼在《猫物语（白）》中出现的白虎怪异叫什么？", a: ["苛虎", "障猫", "黑虎", "白魅"], c: 0 },
+        { q: "贝木泥舟在《恋物语》中对千石抚子宣称自己擅长什么魔法？", a: ["变成肉片的魔法", "让人消失的魔法", "赚钱的魔法", "恋爱的魔法"], c: 0 },
+        { q: "斧乃木余接的口头禅「我以得意的表情如此说道」后来消失是因为？", a: ["她累了", "黑仪的建议", "她觉得黑历史太羞耻了", "历的吐槽"], c: 2 },
+        { q: "《伤物语》中，历夺回双腿时面对的对手是？", a: ["德拉曼兹路基", "艾比索特", "奇洛金卡达", "忍野咩咩"], c: 1 },
+        { q: "在《终物语》最后，历最终拯救了谁而完成了自我救赎？", a: ["忍野扇", "自己", "战场原", "羽川翼"], c: 0 },
+        // 新增 20 题
+        { q: "忍野咩咩对阿良良木历的专属称呼是？", a: ["阿良良木君", "历亲", "阿拉拉木君", "那个吸血鬼"], c: 2 },
+        { q: "神原骏河在篮球部是什么职位？", a: ["队长", "王牌/前任队长", "经理", "板凳球员"], c: 1 },
+        { q: "卧烟伊豆湖的经典台词是？", a: ["我无所不知", "我什么都不知道", "没有我不了解的事情", "这都是怪异的错"], c: 2 },
+        { q: "千石抚子在《囮物语》中吃掉了什么变成了神？", a: ["蛇的遗骸", "符咒", "历的头发", "神酒"], c: 1 },
+        { q: "阿良良木月火真实的怪异身份是？", a: ["凤凰", "杜鹃", "火鸟", "不死身"], c: 1 },
+        { q: "影缝余弦战斗时绝对不会踩到的地方是？", a: ["敌人的影子", "地面", "水面", "屋顶"], c: 1 },
+        { q: "贝木泥舟最讨厌的东西是什么？", a: ["钱", "虚假的东西", "无法用钱买到的东西", "战场原"], c: 2 },
+        { q: "羽川翼在国中时期的发型是？", a: ["短发", "单马尾", "两条长辫子", "披肩发"], c: 2 },
+        { q: "《花物语》中，神原骏河面对的对手“恶魔之手”持有者是谁？", a: ["沼地蜡花", "贝木泥舟", "忍野扇", "阿良良木历"], c: 0 },
+        { q: "姬丝秀忒被夺走的左手是在谁手里？", a: ["德拉曼兹路基", "艾比索特", "奇洛金卡达", "忍野咩咩"], c: 0 },
+        { q: "阿良良木历的两个妹妹所在的初中叫什么名字？", a: ["栂之木二中", "直江津高中", "北白蛇中学", "七百一中"], c: 0 },
+        { q: "《续·终物语》中，镜中世界的角色性格特点是？", a: ["完全相同", "完全相反/内在显现", "失去记忆", "变成怪异"], c: 1 },
+        { q: "忍野忍在不吸血的状态下，外表看起来是几岁？", a: ["6岁", "8岁", "10岁", "12岁"], c: 1 },
+        { q: "战场原黑仪的文具盒里，最常用的武器是？", a: ["圆规", "订书机", "美工刀", "直尺"], c: 1 },
+        { q: "老仓育最擅长的学科是？", a: ["国语", "数学", "物理", "化学"], c: 1 },
+        { q: "《化物语》动画第 12 集中，历与战场原去郊外看的是？", a: ["流星雨", "夏夜大三角", "烟花", "怪异"], c: 1 },
+        { q: "手折正弦的怪异专家身份是专门处理什么的？", a: ["不死身怪异", "玩偶/付丧神", "欺诈师", "吸血鬼"], c: 1 },
+        { q: "阿良良木历在《终物语》中提到的“欧拉”是指谁？", a: ["忍野扇", "老仓育", "数学老师", "羽川翼"], c: 1 },
+        { q: "《物语系列》的小说原作者是谁？", a: ["西尾维新", "新房昭之", "渡边明夫", "虚渊玄"], c: 0 },
+        { q: "阿良良木历最后考上的大学专业是？", a: ["数学系", "文学系", "法学院(警察官)", "物理系"], c: 2 }
     ];
 
     let current = 0;
     let score = 0;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    function flash(text, color, next) {
-        const f = document.getElementById('flash-card');
-        f.style.display = 'flex';
-        f.style.background = color;
-        f.style.color = color === '#000' ? '#fff' : '#000';
-        f.innerText = text;
-        playSound('flash');
+    function playTone(freq, dur) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.value = freq;
+        osc.type = 'square';
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+    }
+
+    function showShutter(text, color, callback) {
+        const s = document.getElementById('shutter');
+        s.style.display = 'flex';
+        s.style.background = color;
+        s.style.color = color === '#d20000' ? '#000' : '#fff';
+        s.innerText = text;
+        playTone(color === '#d20000' ? 150 : 100, 0.2);
         
+        // 增加延迟到 1200ms
         setTimeout(() => {
-            f.style.display = 'none';
-            if(next) next();
-        }, 150);
+            s.style.display = 'none';
+            if(callback) callback();
+        }, 1200); 
     }
 
-    function initQuiz() {
-        playSound('click');
-        document.getElementById('start-page').style.display = 'none';
-        flash('第一题', '#be0000', () => {
-            document.getElementById('quiz-page').style.display = 'block';
-            showQuestion();
+    function startQuiz() {
+        document.getElementById('start-screen').classList.remove('active');
+        showShutter('黒齣', '#000', () => {
+            document.getElementById('quiz-screen').classList.add('active');
+            updateQuestion();
         });
     }
 
-    function showQuestion() {
+    function updateQuestion() {
         const q = questions[current];
-        document.getElementById('q-idx').innerText = (current + 1).toString().padStart(2, '0');
+        document.getElementById('q-num').innerText = (current + 1).toString().padStart(2, '0');
         document.getElementById('q-text').innerText = q.q;
-        const container = document.getElementById('q-opts');
-        container.innerHTML = '';
+        document.getElementById('progress').style.width = (current / questions.length * 100) + '%';
         
+        const opts = document.getElementById('q-opts');
+        opts.innerHTML = '';
         q.a.forEach((opt, i) => {
-            const b = document.createElement('button');
-            b.className = 'opt-btn';
-            b.innerText = opt;
-            b.onclick = () => checkAnswer(i);
-            container.appendChild(b);
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = opt;
+            btn.onclick = () => handleAnswer(i);
+            opts.appendChild(btn);
         });
     }
 
-    function checkAnswer(idx) {
-        if(idx === questions[current].c) score++;
-        playSound('click');
+    function handleAnswer(i) {
+        if(i === questions[current].c) score++;
         current++;
         
         if(current < questions.length) {
-            const titles = ["黑一分", "赤一分", "承", "转", "间幕"];
-            const randomTitle = titles[Math.floor(Math.random()*titles.length)];
-            const randomColor = Math.random() > 0.5 ? '#000' : '#be0000';
-            flash(randomTitle, randomColor, showQuestion);
+            const tag = Math.random() > 0.5 ? '赤齣' : '黑齣';
+            const color = tag === '赤齣' ? '#d20000' : '#000';
+            showShutter(tag, color, updateQuestion);
         } else {
-            flash('终结', '#be0000', showResult);
+            showShutter('完', '#d20000', showResult);
         }
     }
 
     function showResult() {
-        document.getElementById('quiz-page').style.display = 'none';
-        document.getElementById('result-page').style.display = 'block';
-        document.getElementById('score-val').innerText = `正确数: ${score} / ${questions.length}`;
+        document.getElementById('quiz-screen').classList.remove('active');
+        document.getElementById('result-screen').classList.add('active');
+        document.getElementById('progress').style.width = '100%';
         
         const rank = document.getElementById('rank-name');
         const desc = document.getElementById('rank-desc');
+        const detail = document.getElementById('score-detail');
         
-        if(score === 10) {
+        detail.innerText = `正解数：${score} / ${questions.length}`;
+        
+        const ratio = score / questions.length;
+        if(ratio === 1) {
             rank.innerText = "怪异之王";
-            desc.innerText = "你是真正的阿良良木历，所有的怪异都在你的掌握之中。";
-        } else if(score >= 7) {
-            rank.innerText = "班长中的班长";
-            desc.innerText = "虽然不是无所不知，但你知道的确实很多。";
-        } else if(score >= 4) {
-            rank.innerText = "迷路的蜗牛";
-            desc.innerText = "你还在寻找真相的路上，多读读西尾维新吧。";
+            desc.innerText = "你是真正的专家。忍野咩咩会把他的夏威夷衬衫传给你，你已经看穿了所有的虚假与真实。";
+        } else if(ratio >= 0.8) {
+            rank.innerText = "白翼的圣者";
+            desc.innerText = "「我不是无所不知，我只是恰好知道而已。」你的知识储备足以支撑起一整座图书馆。";
+        } else if(ratio >= 0.5) {
+            rank.innerText = "火炎姐妹";
+            desc.innerText = "充满了正义感但还有些不成熟。虽然了解怪异，但有时还是会被欺诈师蒙蔽双眼。";
+        } else if(ratio >= 0.2) {
+            rank.innerText = "迷途的幼女";
+            desc.innerText = "哎呀，咬到舌头了吗？你还在怪异的边缘徘徊，建议重新从《化物语》开始补番。";
         } else {
-            rank.innerText = "贝木的牺牲品";
-            desc.innerText = "你完全被欺骗了，现在的你只是个路人而已。";
+            rank.innerText = "贝木的饵食";
+            desc.innerText = "你完全被假货骗了！现在的你连自己的体重都守不住，快去寻找忍野先生的帮助吧。";
         }
     }
 </script>
